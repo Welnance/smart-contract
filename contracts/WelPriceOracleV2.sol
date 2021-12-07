@@ -22,19 +22,10 @@ interface IStdReference {
 }
 
 
-interface IPancakeRouter {
-    function getAmountsOut(uint256 amountIn, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts);
-}
 
-contract WelPriceOracle is PriceOracle {
+contract WelPriceOracleV2 is PriceOracle {
     using SafeMath for uint256;
-    address public routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
     address public admin;
-    address public tokenBUSD;
-    address public tokenWel;
 
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
@@ -46,26 +37,10 @@ contract WelPriceOracle is PriceOracle {
         ref = _ref;
         admin = msg.sender;
     }
-
-    function getAmountsOut(uint256 _amountIn, address token0, address token1) public view returns (uint256 result) {
-        address[] memory pairToken = new address[](2);
-        pairToken[0] = token0;
-        pairToken[1] = token1;
-        uint256[] memory results = IPancakeRouter(routerAddress).getAmountsOut(_amountIn, pairToken);
-        result = results[1];
-    }
-
-    function setTokenBUSD (address _tokenAddress) external {
-        tokenBUSD = _tokenAddress;
-    }
     
-    function setTokenWel (address _tokenAddress) external {
-        tokenWel = _tokenAddress;
-    }
-
     function getUnderlyingPrice(WLToken wlToken) public view returns (uint) {
         if (compareStrings(wlToken.symbol(), "wlWEL")) {
-            return getAmountsOut(1000000000000000000,tokenWel, tokenBUSD);
+            return 0;
         } else if (compareStrings(wlToken.symbol(), "wlBNB")) {
             IStdReference.ReferenceData memory data = ref.getReferenceData("BNB", "USD");
             return data.rate;

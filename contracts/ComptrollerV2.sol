@@ -8,7 +8,7 @@ import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 import "./Governance/WEL.sol";
 
-contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
+contract ComptrollerV2 is ComptrollerV1Storage, ComptrollerInterface, ComptrollerErrorReporter, ExponentialNoError {
     event MarketListed(WLToken wlToken);
     event MarketEntered(WLToken wlToken, address account);
     event MarketExited(WLToken wlToken, address account);
@@ -408,7 +408,7 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
         return (uint(Error.NO_ERROR), seizeTokens);
     }
-    function _setPriceOracle(PriceOracle newOracle) external returns (uint) {
+    function _setPriceOracle(PriceOracle newOracle) public returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PRICE_ORACLE_OWNER_CHECK);
         }
@@ -473,7 +473,7 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         }
         allMarkets.push(wlToken);
     }
-    function _setPauseGuardian(address newPauseGuardian) external returns (uint) {
+    function _setPauseGuardian(address newPauseGuardian) public returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PAUSE_GUARDIAN_OWNER_CHECK);
         }
@@ -505,7 +505,7 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         // Emit NewBorrowCapGuardian(OldBorrowCapGuardian, NewBorrowCapGuardian)
         emit NewBorrowCapGuardian(oldBorrowCapGuardian, newBorrowCapGuardian);
     }
-    function _setProtocolPaused(bool state) external validPauseState(state) returns(bool) {
+    function _setProtocolPaused(bool state) public validPauseState(state) returns(bool) {
         protocolPaused = state;
         emit ActionProtocolPaused(state);
         return state;
@@ -629,15 +629,15 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
             emit DistributedBorrowerWel(WLToken(wlToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
-    function claimWel(address holder) external {
+    function claimWel(address holder) public {
         return claimWel(holder, allMarkets);
     }
-    function claimWel(address holder, WLToken[] memory wlTokens) external {
+    function claimWel(address holder, WLToken[] memory wlTokens) public {
         address[] memory holders = new address[](1);
         holders[0] = holder;
         claimWel(holders, wlTokens, true, true);
     }
-    function claimWel(address[] memory holders, WLToken[] memory wlTokens, bool borrowers, bool suppliers) external {
+    function claimWel(address[] memory holders, WLToken[] memory wlTokens, bool borrowers, bool suppliers) public {
         uint j;
         for (j = 0; j < holders.length; j++) {
             welAccrued[holders[j]] = grantWELInternal(holders[j], welAccrued[holders[j]]);

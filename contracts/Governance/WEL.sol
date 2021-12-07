@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.17;
 
 contract Owned {
 
@@ -15,7 +15,7 @@ contract Owned {
         _;
     }
 
-    function transferOwnership(address newOwner) public onlyOwner {
+    function transferOwnership(address newOwner) external onlyOwner {
         owner = newOwner;
         emit OwnershipTransferred(owner, newOwner);
     }
@@ -33,13 +33,13 @@ contract Tokenlock is Owned {
         _;
     }
 
-    function freeze() public onlyOwner {
+    function freeze() external onlyOwner {
         isLocked = 1;
 
         emit Freezed();
     }
 
-    function unfreeze() public onlyOwner {
+    function unfreeze() external onlyOwner {
         isLocked = 0;
 
         emit UnFreezed();
@@ -189,7 +189,7 @@ contract WEL is Tokenlock {
      * @notice Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
      */
-    function delegate(address delegatee) public validLock {
+    function delegate(address delegatee) external validLock {
         return _delegate(msg.sender, delegatee);
     }
 
@@ -202,7 +202,7 @@ contract WEL is Tokenlock {
      * @param r Half of the ECDSA signature pair
      * @param s Half of the ECDSA signature pair
      */
-    function delegateBySig(address delegatee, uint nonce, uint expiry, uint8 v, bytes32 r, bytes32 s) public validLock {
+    function delegateBySig(address delegatee, uint nonce, uint expiry, uint8 v, bytes32 r, bytes32 s) external validLock {
         bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
         bytes32 structHash = keccak256(abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
