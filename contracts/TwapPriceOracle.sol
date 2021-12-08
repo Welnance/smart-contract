@@ -319,13 +319,6 @@ library FixedPoint {
     }
 }
 
-interface IPancakeRouter {
-    function getAmountsOut(uint256 amountIn, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts);
-}
-
 interface IPancakeFactory {
     function getPair(address token0, address token1)
     external
@@ -372,7 +365,7 @@ library PancakeOracleLibrary {
 
 contract TwapPriceOracle {
     using FixedPoint for *;
-    uint public constant PERIOD = 24 hours;
+    uint public constant P = 1 hours;
     
     address pair;
     address public immutable token0;
@@ -396,7 +389,7 @@ contract TwapPriceOracle {
         uint112 reserve0;
         uint112 reserve1;
         (reserve0, reserve1, blockTimestampLast) = IPancakePair(pair).getReserves();
-        require(reserve0 != 0 && reserve1 != 0, 'ExampleOracleSimple: NO_RESERVES'); // ensure that there's liquidity in the pair
+        require(reserve0 != 0 && reserve1 != 0, 'TwapPriceOracle: NO_RESERVES'); // ensure that there's liquidity in the pair
     }
 
     function update() external {
@@ -405,7 +398,7 @@ contract TwapPriceOracle {
         uint32 timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
 
         // ensure that at least one full period has passed since the last update
-        // require(timeElapsed >= PERIOD, 'ExampleOracleSimple: PERIOD_NOT_ELAPSED');
+        require(timeElapsed >= P, 'TwapPriceOracle: PERIOD_NOT_ELAPSED');
 
         // overflow is desired, casting never truncates
         // cumulative price is in (uq112x112 price * seconds) units so we simply wrap it after division by time elapsed
@@ -422,7 +415,7 @@ contract TwapPriceOracle {
         if (token == token0) {
             amountOut = price0Average.mul(amountIn).decode144();
         } else {
-            require(token == token1, 'ExampleOracleSimple: INVALID_TOKEN');
+            require(token == token1, 'TwapPriceOracle: INVALID_TOKEN');
             amountOut = price1Average.mul(amountIn).decode144();
         }
     }
