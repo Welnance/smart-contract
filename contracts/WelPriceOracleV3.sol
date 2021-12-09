@@ -25,7 +25,7 @@ interface ITwapPriceOracle {
     function consult(address token, uint amountIn) external view returns (uint amountOut);
 }
 
-contract WelPriceOracleV2 is PriceOracle {
+contract WelPriceOracleV3 is PriceOracle {
     using SafeMath for uint256;
     address public admin;
     address public twapPriceOracle;
@@ -63,19 +63,6 @@ contract WelPriceOracleV2 is PriceOracle {
             uint decimalDelta = 18-uint(token.decimals());
             return price.mul(10**decimalDelta);
         }
-    }
-
-    function setUnderlyingPrice(WLToken wlToken, uint underlyingPriceMantissa) public {
-        require(msg.sender == admin, "only admin can set underlying price");
-        address asset = address(WBep20(address(wlToken)).underlying());
-        emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
-        prices[asset] = underlyingPriceMantissa;
-    }
-
-    function setDirectPrice(address asset, uint price) public {
-        require(msg.sender == admin, "only admin can set price");
-        emit PricePosted(asset, prices[asset], price, price);
-        prices[asset] = price;
     }
 
     function assetPrices(address asset) external view returns (uint) {
